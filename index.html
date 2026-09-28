@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة التنافس والتقييم - قد التحدي</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Arabic Font (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-indigo-700 text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <i class="fa-solid fa-trophy text-amber-400 text-2xl"></i>
+                <h1 class="text-xl font-bold">منظومة "قد التحدي" للتقييم</h1>
+            </div>
+            <div id="userInfo" class="hidden flex items-center space-x-4 space-x-reverse">
+                <span id="userNameDisplay" class="font-semibold text-indigo-100"></span>
+                <span id="userRoleBadge" class="text-xs px-2.5 py-1 rounded-full bg-indigo-900 text-indigo-200"></span>
+                <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1.5 rounded-lg transition duration-200 flex items-center gap-1">
+                    <i class="fa-solid fa-right-from-bracket"></i> خروج
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="container mx-auto px-4 py-6 flex-grow">
+
+        <!-- 1. Auth View (Login) -->
+        <section id="authView" class="max-w-md mx-auto my-12">
+            <div class="bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
+                <div class="text-center mb-6">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 mb-3">
+                        <i class="fa-solid fa-user-lock text-2xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">تسجيل الدخول</h2>
+                    <p class="text-slate-500 text-sm mt-1">أدخل بيانات الحساب للمتابعة</p>
+                </div>
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">اسم المستخدم</label>
+                        <input type="text" id="loginUsername" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">كلمة السر</label>
+                        <input type="password" id="loginPassword" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    </div>
+                    <div id="loginError" class="hidden text-red-600 text-xs font-semibold text-center bg-red-50 p-2 rounded-lg"></div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg transition shadow-md hover:shadow-lg">
+                        دخول
+                    </button>
+                </form>
+                </div>
+        </section>
+
+        <!-- 2. Admin Dashboard View -->
+        <section id="adminDashboard" class="hidden space-y-6">
+            <!-- Active Round Info Bar -->
+            <div class="bg-gradient-to-r from-indigo-800 to-indigo-600 text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <span class="text-xs uppercase tracking-wider text-indigo-200 font-bold block mb-1">الجولة الحالية النشطة</span>
+                    <h2 id="adminRoundTitle" class="text-2xl font-extrabold"></h2>
+                    <p class="text-sm text-indigo-100 mt-1" id="adminRoundDates"></p>
+                </div>
+                <button onclick="archiveAndStartNewRound()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-5 py-2.5 rounded-xl shadow transition duration-200 flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-box-archive"></i> أرشفة الجولة وبدء جولة جديدة
+                </button>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="flex border-b border-slate-200 bg-white rounded-xl shadow-sm p-1">
+                <button onclick="switchAdminTab('evaluations')" id="tabBtn-evaluations" class="admin-tab text-sm font-bold py-2.5 px-6 rounded-lg text-indigo-600 bg-indigo-50">
+                    <i class="fa-solid fa-clipboard-check ml-1"></i> رصد التقييمات
+                </button>
+                <button onclick="switchAdminTab('programs')" id="tabBtn-programs" class="admin-tab text-sm font-bold py-2.5 px-6 rounded-lg text-slate-600 hover:bg-slate-50">
+                    <i class="fa-solid fa-list-check ml-1"></i> إدارة البرامج
+                </button>
+                <button onclick="switchAdminTab('users')" id="tabBtn-users" class="admin-tab text-sm font-bold py-2.5 px-6 rounded-lg text-slate-600 hover:bg-slate-50">
+                    <i class="fa-solid fa-users ml-1"></i> إدارة المستخدمين
+                </button>
+            </div>
+
+            <!-- Tab 1: Evaluations Management -->
+            <div id="adminTab-evaluations" class="space-y-4">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">رصد تقييمات الأعضاء اليومية/الدورية</h3>
+                            <p class="text-sm text-slate-500">اختر التاريخ والعضو لتسجيل أو تحديث الحالة والحصول على النقاط فوراً</p>
+                        </div>
+                        <div class="flex gap-3 w-full md:w-auto">
+                            <input type="date" id="evalDate" onchange="renderEvaluationsTable()" class="px-3 py-2 border rounded-lg text-sm bg-slate-50 font-semibold text-slate-700">
+                            <select id="evalUserSelect" onchange="renderEvaluationsTable()" class="px-3 py-2 border rounded-lg text-sm bg-slate-50 font-semibold text-slate-700">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-xs font-bold border-b">
+                                    <th class="p-3">اسم البرنامج</th>
+                                    <th class="p-3">الدورية</th>
+                                    <th class="p-3">الحالة والنتيجة</th>
+                                    <th class="p-3">تفاصيل التأخير (إن وجد)</th>
+                                    <th class="p-3">النقاط المحسوبة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="evaluationsTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Rows dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Programs CRUD -->
+            <div id="adminTab-programs" class="hidden space-y-4">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-slate-800">قائمة البرامج التنافسية</h3>
+                        <button onclick="openProgramModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition">
+                            <i class="fa-solid fa-plus"></i> إضافة برنامج جديد
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-xs font-bold border-b">
+                                    <th class="p-3">اسم البرنامج</th>
+                                    <th class="p-3">الدورية</th>
+                                    <th class="p-3">إعدادات النقاط</th>
+                                    <th class="p-3">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="programsTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic programs -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Users Management -->
+            <div id="adminTab-users" class="hidden space-y-4">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-slate-800">قائمة المستخدمين والأعضاء</h3>
+                        <button onclick="openUserModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition">
+                            <i class="fa-solid fa-user-plus"></i> إضافة مستخدم جديد
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-xs font-bold border-b">
+                                    <th class="p-3">الاسم الكامل</th>
+                                    <th class="p-3">اسم المستخدم</th>
+                                    <th class="p-3">الدور (الصلاحية)</th>
+                                    <th class="p-3">نقاط الجولة الحالية</th>
+                                    <th class="p-3">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic users -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Member Dashboard View -->
+        <section id="memberDashboard" class="hidden space-y-6">
+            <!-- Summary Banner -->
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <span class="text-xs uppercase tracking-wider text-teal-200 font-bold block mb-1">أهلاً بك، <span id="memberNameDisplay"></span></span>
+                    <h2 class="text-2xl font-extrabold" id="memberRoundTitle">الجولة الحالية</h2>
+                    <p class="text-sm text-teal-100 mt-1">تتبع أدائك اليومي ورصيد نقاطك</p>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 text-center">
+                    <span class="text-xs text-teal-100 font-semibold block">إجمالي النقاط المحققة</span>
+                    <span id="memberTotalPoints" class="text-4xl font-extrabold text-amber-300">0</span>
+                    <span class="text-xs text-teal-100 font-semibold">نقطة</span>
+                </div>
+            </div>
+
+            <!-- Current Evaluation Status Table -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">جدول السجل والتقييمات الخاصة بك</h3>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-slate-600 font-semibold">تصفية بالتاريخ:</label>
+                        <input type="date" id="memberFilterDate" onchange="renderMemberDashboard()" class="px-3 py-1.5 border rounded-lg text-sm bg-slate-50 font-semibold">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 text-xs font-bold border-b">
+                                <th class="p-3">التاريخ</th>
+                                <th class="p-3">اسم البرنامج</th>
+                                <th class="p-3">الحالة المرصودة</th>
+                                <th class="p-3">التفاصيل / التأخير</th>
+                                <th class="p-3">النقاط</th>
+                            </tr>
+                        </thead>
+                        <tbody id="memberLogsTableBody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Archived Rounds View -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">أرشيف الجولات السابقة</h3>
+                <div id="memberArchivesList" class="space-y-3">
+                    <!-- Dynamic archive list -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modals -->
+
+    <!-- Program Modal (Add / Edit) -->
+    <div id="programModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <h3 id="programModalTitle" class="text-xl font-bold text-slate-800 border-b pb-3">إضافة برنامج جديد</h3>
+            <form id="programForm" onsubmit="saveProgram(event)" class="space-y-4">
+                <input type="hidden" id="progId">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">اسم البرنامج</label>
+                    <input type="text" id="progName" required class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">دورية التقييم</label>
+                    <select id="progFrequency" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="يومي">يومي</option>
+                        <option value="أسبوعي">أسبوعي</option>
+                        <option value="شهري">شهري</option>
+                    </select>
+                </div>
+                
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase">تخصيص النقاط للحالات</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">في وقتها (+)</label>
+                            <input type="number" id="ptsOnTime" value="10" required class="w-full px-3 py-1.5 border rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">لم يُنفذ (- أو 0)</label>
+                            <input type="number" id="ptsNotDone" value="-5" required class="w-full px-3 py-1.5 border rounded-lg">
+                        </div>
+                    </div>
+                    <div class="border-t pt-2">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">متأخرة (+ أو -)</label>
+                        <input type="number" id="ptsLate" value="5" required class="w-full px-3 py-1.5 border rounded-lg">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="closeProgramModal()" class="px-4 py-2 border rounded-lg text-slate-600 hover:bg-slate-100 text-sm">إلغاء</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Modal (Add / Edit) -->
+    <div id="userModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <h3 id="userModalTitle" class="text-xl font-bold text-slate-800 border-b pb-3">إضافة مستخدم جديد</h3>
+            <form id="userForm" onsubmit="saveUser(event)" class="space-y-4">
+                <input type="hidden" id="userId">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">الاسم الكامل</label>
+                    <input type="text" id="userFullName" required class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">اسم المستخدم (Login)</label>
+                    <input type="text" id="userName" required class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">كلمة السر</label>
+                    <input type="password" id="userPass" required class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">الصلاحية (الدور)</label>
+                    <select id="userRole" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="member">عضو (Member)</option>
+                        <option value="admin">مدير (Admin)</option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="closeUserModal()" class="px-4 py-2 border rounded-lg text-slate-600 hover:bg-slate-100 text-sm">إلغاء</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-slate-500 text-xs mt-auto">
+        <p>نظام التقييم والتنافس التفاعلي &copy; 2026 - جاهز للعمل والتصدير المستقل</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- DATA STRUCTURES & INITIAL SEED DATA ---
+        const DEFAULT_DATA = {
+            currentUser: null,
+            currentRound: {
+                id: 'round_1',
+                title: 'قد التحدي لشهر سبتمبر 2026',
+                startDate: new Date().toISOString().split('T')[0],
+                endDate: ''
+            },
+            users: [
+                { id: 'u_admin', username: 'admin', password: 'admin123', fullName: 'المدير العام', role: 'admin' },
+                { id: 'u_user1', username: 'user1', password: '123', fullName: 'أحمد علي', role: 'member' }
+            ],
+            programs: [
+                { id: 'p_1', name: 'أداء الصلاة', frequency: 'يومي', points: { onTime: 10, late: 5, notDone: -5 } },
+                { id: 'p_2', name: 'قراءة القرآن', frequency: 'يومي', points: { onTime: 10, late: 5, notDone: 0 } },
+                { id: 'p_3', name: 'أداء الواجبات المدرسية', frequency: 'يومي', points: { onTime: 15, late: 5, notDone: -10 } },
+                { id: 'p_4', name: 'المراجعة اليومية', frequency: 'يومي', points: { onTime: 10, late: 5, notDone: -5 } }
+            ],
+            // Logs structure: { id, roundId, userId, programId, date, status: 'onTime'|'late'|'notDone', delayDetails, points }
+            evaluations: [],
+            // Archives structure: [{ roundTitle, startDate, endDate, userScores: [{ userId, fullName, points }] }]
+            archives: []
+        };
+
+        // --- SHARED SERVER STORAGE (Netlify Function + Blobs) ---
+        let session = null;
+        try { session = JSON.parse(localStorage.getItem('challenge_session') || 'null'); } catch (e) {}
+        let version = 0, pending = 0, saveChain = Promise.resolve(), pollTimer = null;
+        let appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+
+        async function api(path, opts = {}) {
+            const h = { 'Content-Type': 'application/json' };
+            if (session) { h['x-user'] = encodeURIComponent(session.username); h['x-pass'] = encodeURIComponent(session.password); }
+            const r = await fetch('/api' + path, { ...opts, headers: h });
+            return { status: r.status, body: await r.json().catch(() => ({})) };
+        }
+
+        function applyRemote(res) {
+            const cu = appData.currentUser;
+            appData = { ...res.data, currentUser: cu };
+            version = res.version;
+            const fresh = cu && appData.users.find(u => u.id === cu.id);
+            if (!fresh) { logout(); return; }
+            appData.currentUser = fresh;
+            renderApp();
+        }
+
+        function saveData() {
+            if (!appData.currentUser || appData.currentUser.role !== 'admin') return;
+            pending++;
+            saveChain = saveChain.then(async () => {
+                const { currentUser, ...shared } = appData;
+                const r = await api('/save', { method: 'POST', body: JSON.stringify({ baseVersion: version, data: shared }) });
+                if (r.status === 200) version = r.body.version;
+                else if (r.status === 409) { applyRemote(r.body); alert('تم تعديل البيانات من جهاز آخر قبل حفظك. تم تحديث الشاشة، أعد المحاولة.'); }
+                else alert('تعذر حفظ التغييرات، تحقق من الاتصال.');
+            }).catch(() => alert('تعذر الاتصال بالخادم.')).finally(() => pending--);
+        }
+
+        function startPolling() {
+            stopPolling();
+            pollTimer = setInterval(async () => {
+                if (!session || !appData.currentUser || document.hidden || pending) return;
+                const a = document.activeElement;
+                if (a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && ['text','number','password','search'].includes(a.type)))) return;
+                if (['programModal', 'userModal'].some(id => { const m = document.getElementById(id); return m && !m.classList.contains('hidden'); })) return;
+                try {
+                    const r = await api('/data?v=' + version);
+                    if (r.status === 401) logout();
+                    else if (r.status === 200 && !r.body.unchanged) applyRemote(r.body);
+                } catch (e) {}
+            }, 4000);
+        }
+        function stopPolling() { if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
+
+
+        // --- APP INIT & ROUTING ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default eval date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('evalDate').value = today;
+            document.getElementById('memberFilterDate').value = '';
+
+            showAuthView();
+            if (session) {
+                api('/login', { method: 'POST', body: JSON.stringify(session) }).then(r => {
+                    if (r.status === 200) { appData = { ...r.body.data, currentUser: r.body.user }; version = r.body.version; renderApp(); startPolling(); }
+                    else { session = null; localStorage.removeItem('challenge_session'); }
+                }).catch(() => {});
+            }
+        });
+
+        function renderApp() {
+            const user = appData.currentUser;
+            if (!user) {
+                showAuthView();
+                return;
+            }
+
+            document.getElementById('authView').classList.add('hidden');
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('userNameDisplay').textContent = user.fullName;
+            document.getElementById('userRoleBadge').textContent = user.role === 'admin' ? 'مدير النظام' : 'عضو';
+
+            if (user.role === 'admin') {
+                document.getElementById('memberDashboard').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                setupAdminDashboard();
+            } else {
+                document.getElementById('adminDashboard').classList.add('hidden');
+                document.getElementById('memberDashboard').classList.remove('hidden');
+                setupMemberDashboard();
+            }
+        }
+
+        function showAuthView() {
+            document.getElementById('authView').classList.remove('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('memberDashboard').classList.add('hidden');
+        }
+
+        // --- AUTHENTICATION LOGIC ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
+            const errDiv = document.getElementById('loginError');
+            try {
+                const r = await api('/login', { method: 'POST', body: JSON.stringify({ username: u, password: p }) });
+                if (r.status === 200) {
+                    session = { username: u, password: p };
+                    localStorage.setItem('challenge_session', JSON.stringify(session));
+                    appData = { ...r.body.data, currentUser: r.body.user };
+                    version = r.body.version;
+                    errDiv.classList.add('hidden');
+                    renderApp(); startPolling();
+                } else { errDiv.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة'; errDiv.classList.remove('hidden'); }
+            } catch (err) { errDiv.textContent = 'تعذر الاتصال بالخادم'; errDiv.classList.remove('hidden'); }
+        }
+
+        function logout() {
+            stopPolling();
+            session = null;
+            localStorage.removeItem('challenge_session');
+            appData.currentUser = null;
+            showAuthView();
+        }
+
+        // --- ADMIN DASHBOARD FUNCTIONS ---
+        function setupAdminDashboard() {
+            document.getElementById('adminRoundTitle').textContent = appData.currentRound.title;
+            document.getElementById('adminRoundDates').textContent = `تاريخ البدء: ${appData.currentRound.startDate}`;
+            populateUserSelectOptions();
+            renderEvaluationsTable();
+            renderProgramsTable();
+            renderUsersTable();
+        }
+
+        function switchAdminTab(tabName) {
+            ['evaluations', 'programs', 'users'].forEach(t => {
+                const content = document.getElementById(`adminTab-${t}`);
+                const btn = document.getElementById(`tabBtn-${t}`);
+                if (t === tabName) {
+                    content.classList.remove('hidden');
+                    btn.classList.add('bg-indigo-50', 'text-indigo-600');
+                    btn.classList.remove('text-slate-600');
+                } else {
+                    content.classList.add('hidden');
+                    btn.classList.remove('bg-indigo-50', 'text-indigo-600');
+                    btn.classList.add('text-slate-600');
+                }
+            });
+        }
+
+        function populateUserSelectOptions() {
+            const select = document.getElementById('evalUserSelect');
+            select.innerHTML = '';
+            const members = appData.users.filter(u => u.role === 'member');
+            members.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = m.fullName;
+                select.appendChild(opt);
+            });
+        }
+
+        // Render Evaluations Grid for Selected User and Date
+        function renderEvaluationsTable() {
+            const selectedUserId = document.getElementById('evalUserSelect').value;
+            const selectedDate = document.getElementById('evalDate').value;
+            const tbody = document.getElementById('evaluationsTableBody');
+            tbody.innerHTML = '';
+
+            if (!selectedUserId || !selectedDate) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-slate-400">يرجى اختيار العضو والتاريخ</td></tr>`;
+                return;
+            }
+
+            appData.programs.forEach(prog => {
+                // Find existing eval
+                const evalItem = appData.evaluations.find(e => 
+                    e.roundId === appData.currentRound.id &&
+                    e.userId === selectedUserId &&
+                    e.programId === prog.id &&
+                    e.date === selectedDate
+                );
+
+                const currentStatus = evalItem ? evalItem.status : 'not_recorded';
+                const currentDelay = evalItem ? evalItem.delayDetails || '' : '';
+                const currentPts = evalItem ? evalItem.points : 0;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-800">${prog.name}</td>
+                    <td class="p-3"><span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded">${prog.frequency}</span></td>
+                    <td class="p-3">
+                        <select onchange="updateEvaluation('${prog.id}', this.value, '${selectedDate}', '${selectedUserId}')" class="px-2 py-1 border rounded text-xs bg-white font-semibold">
+                            <option value="" ${currentStatus === 'not_recorded' ? 'selected' : ''}>-- غير مرصود --</option>
+                            <option value="onTime" ${currentStatus === 'onTime' ? 'selected' : ''}>في وقتها (+${prog.points.onTime})</option>
+                            <option value="late" ${currentStatus === 'late' ? 'selected' : ''}>متأخرة (+${prog.points.late})</option>
+                            <option value="notDone" ${currentStatus === 'notDone' ? 'selected' : ''}>لم يُنفذ (${prog.points.notDone})</option>
+                        </select>
+                    </td>
+                    <td class="p-3">
+                        <input type="text" placeholder="مدة/تفاصيل التأخير..." value="${currentDelay}" 
+                            onchange="updateDelayDetails('${prog.id}', this.value, '${selectedDate}', '${selectedUserId}')"
+                            class="px-2 py-1 border rounded text-xs w-full max-w-xs ${currentStatus !== 'late' ? 'bg-slate-100' : 'bg-white'}"
+                            ${currentStatus !== 'late' ? 'disabled' : ''}>
+                    </td>
+                    <td class="p-3 font-bold ${currentPts > 0 ? 'text-emerald-600' : currentPts < 0 ? 'text-red-500' : 'text-slate-500'}">
+                        ${currentStatus === 'not_recorded' ? '-' : currentPts + ' نقطة'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateEvaluation(programId, status, date, userId) {
+            if (!status) return;
+
+            const prog = appData.programs.find(p => p.id === programId);
+            let pts = 0;
+            if (status === 'onTime') pts = Number(prog.points.onTime);
+            if (status === 'late') pts = Number(prog.points.late);
+            if (status === 'notDone') pts = Number(prog.points.notDone);
+
+            let existingIndex = appData.evaluations.findIndex(e => 
+                e.roundId === appData.currentRound.id &&
+                e.userId === userId &&
+                e.programId === programId &&
+                e.date === date
+            );
+
+            if (existingIndex > -1) {
+                appData.evaluations[existingIndex].status = status;
+                appData.evaluations[existingIndex].points = pts;
+            } else {
+                appData.evaluations.push({
+                    id: 'eval_' + Date.now(),
+                    roundId: appData.currentRound.id,
+                    userId: userId,
+                    programId: programId,
+                    date: date,
+                    status: status,
+                    delayDetails: '',
+                    points: pts
+                });
+            }
+
+            saveData(appData);
+            renderEvaluationsTable();
+        }
+
+        function updateDelayDetails(programId, details, date, userId) {
+            let evalItem = appData.evaluations.find(e => 
+                e.roundId === appData.currentRound.id &&
+                e.userId === userId &&
+                e.programId === programId &&
+                e.date === date
+            );
+
+            if (evalItem) {
+                evalItem.delayDetails = details;
+                saveData(appData);
+            }
+        }
+
+        // --- PROGRAMS CRUD MANAGEMENT ---
+        function renderProgramsTable() {
+            const tbody = document.getElementById('programsTableBody');
+            tbody.innerHTML = '';
+
+            appData.programs.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-bold">${p.name}</td>
+                    <td class="p-3">${p.frequency}</td>
+                    <td class="p-3 text-xs">
+                        <span class="text-emerald-600 font-bold">وقتها: +${p.points.onTime}</span> | 
+                        <span class="text-amber-600 font-bold">متأخر: +${p.points.late}</span> | 
+                        <span class="text-red-500 font-bold">لم ينفذ: ${p.points.notDone}</span>
+                    </td>
+                    <td class="p-3 space-x-2 space-x-reverse">
+                        <button onclick="editProgram('${p.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold"><i class="fa-solid fa-pen"></i> تعديل</button>
+                        <button onclick="deleteProgram('${p.id}')" class="text-red-500 hover:text-red-700 text-xs font-bold"><i class="fa-solid fa-trash"></i> حذف</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openProgramModal(prog = null) {
+            document.getElementById('programModal').classList.remove('hidden');
+            if (prog) {
+                document.getElementById('programModalTitle').textContent = 'تعديل البرنامج';
+                document.getElementById('progId').value = prog.id;
+                document.getElementById('progName').value = prog.name;
+                document.getElementById('progFrequency').value = prog.frequency;
+                document.getElementById('ptsOnTime').value = prog.points.onTime;
+                document.getElementById('ptsLate').value = prog.points.late;
+                document.getElementById('ptsNotDone').value = prog.points.notDone;
+            } else {
+                document.getElementById('programModalTitle').textContent = 'إضافة برنامج جديد';
+                document.getElementById('programForm').reset();
+                document.getElementById('progId').value = '';
+            }
+        }
+
+        function closeProgramModal() {
+            document.getElementById('programModal').classList.add('hidden');
+        }
+
+        function saveProgram(e) {
+            e.preventDefault();
+            const id = document.getElementById('progId').value;
+            const name = document.getElementById('progName').value.trim();
+            const frequency = document.getElementById('progFrequency').value;
+            const onTime = Number(document.getElementById('ptsOnTime').value);
+            const late = Number(document.getElementById('ptsLate').value);
+            const notDone = Number(document.getElementById('ptsNotDone').value);
+
+            if (id) {
+                const index = appData.programs.findIndex(p => p.id === id);
+                if (index > -1) {
+                    appData.programs[index] = { id, name, frequency, points: { onTime, late, notDone } };
+                }
+            } else {
+                appData.programs.push({
+                    id: 'p_' + Date.now(),
+                    name,
+                    frequency,
+                    points: { onTime, late, notDone }
+                });
+            }
+
+            saveData(appData);
+            closeProgramModal();
+            renderProgramsTable();
+            renderEvaluationsTable();
+        }
+
+        function editProgram(id) {
+            const prog = appData.programs.find(p => p.id === id);
+            if (prog) openProgramModal(prog);
+        }
+
+        function deleteProgram(id) {
+            if (confirm('هل أنت تأكد من حذف هذا البرنامج؟')) {
+                appData.programs = appData.programs.filter(p => p.id !== id);
+                saveData(appData);
+                renderProgramsTable();
+            }
+        }
+
+        // --- USERS CRUD MANAGEMENT ---
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            appData.users.forEach(u => {
+                // Calculate current round total points for user
+                const userPts = appData.evaluations
+                    .filter(e => e.userId === u.id && e.roundId === appData.currentRound.id)
+                    .reduce((sum, e) => sum + e.points, 0);
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-bold">${u.fullName}</td>
+                    <td class="p-3 font-mono text-xs">${u.username}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${u.role === 'admin' ? 'مدير' : 'عضو'}</span></td>
+                    <td class="p-3 font-extrabold text-amber-600">${userPts} نقطة</td>
+                    <td class="p-3 space-x-2 space-x-reverse">
+                        <button onclick="editUser('${u.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold"><i class="fa-solid fa-pen"></i> تعديل</button>
+                        ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.id}')" class="text-red-500 hover:text-red-700 text-xs font-bold"><i class="fa-solid fa-trash"></i> حذف</button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openUserModal(user = null) {
+            document.getElementById('userModal').classList.remove('hidden');
+            if (user) {
+                document.getElementById('userModalTitle').textContent = 'تعديل بيانات المستخدم';
+                document.getElementById('userId').value = user.id;
+                document.getElementById('userFullName').value = user.fullName;
+                document.getElementById('userName').value = user.username;
+                document.getElementById('userPass').value = user.password;
+                document.getElementById('userRole').value = user.role;
+            } else {
+                document.getElementById('userModalTitle').textContent = 'إضافة مستخدم جديد';
+                document.getElementById('userForm').reset();
+                document.getElementById('userId').value = '';
+            }
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.add('hidden');
+        }
+
+        function saveUser(e) {
+            e.preventDefault();
+            const id = document.getElementById('userId').value;
+            const fullName = document.getElementById('userFullName').value.trim();
+            const username = document.getElementById('userName').value.trim();
+            const password = document.getElementById('userPass').value.trim();
+            const role = document.getElementById('userRole').value;
+
+            if (id) {
+                const idx = appData.users.findIndex(u => u.id === id);
+                if (idx > -1) {
+                    appData.users[idx] = { id, fullName, username, password, role };
+                }
+            } else {
+                appData.users.push({ id: 'u_' + Date.now(), fullName, username, password, role });
+            }
+
+            saveData(appData);
+            closeUserModal();
+            renderUsersTable();
+            populateUserSelectOptions();
+        }
+
+        function editUser(id) {
+            const user = appData.users.find(u => u.id === id);
+            if (user) openUserModal(user);
+        }
+
+        function deleteUser(id) {
+            if (confirm('هل أنت تأكد من حذف هذا المستخدم؟')) {
+                appData.users = appData.users.filter(u => u.id !== id);
+                saveData(appData);
+                renderUsersTable();
+                populateUserSelectOptions();
+            }
+        }
+
+        // --- ROUNDS & ARCHIVING SYSTEM ---
+        function archiveAndStartNewRound() {
+            if (!confirm('هل أنت تأكد من أرشفة الجولة الحالية وبدء جولة جديدة؟ سيتم صفر نقاط الجولة الحالية وتحويل النتائج للأرشيف.')) return;
+
+            const today = new Date().toISOString().split('T')[0];
+
+            // 1. Calculate scores per user for current round
+            const userScores = appData.users.filter(u => u.role === 'member').map(u => {
+                const totalPoints = appData.evaluations
+                    .filter(e => e.userId === u.id && e.roundId === appData.currentRound.id)
+                    .reduce((sum, e) => sum + e.points, 0);
+                return { userId: u.id, fullName: u.fullName, points: totalPoints };
+            });
+
+            // 2. Save archive entry
+            appData.archives.push({
+                roundTitle: appData.currentRound.title,
+                startDate: appData.currentRound.startDate,
+                endDate: today,
+                userScores: userScores
+            });
+
+            // 3. Prompt for new round title
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            const defaultNewName = `قد التحدي لشهر جديد ${today}`;
+            const newTitle = prompt('أدخل اسم الجولة الجديدة:', defaultNewName) || defaultNewName;
+
+            // 4. Update current round info
+            appData.currentRound = {
+                id: 'round_' + Date.now(),
+                title: newTitle,
+                startDate: today,
+                endDate: ''
+            };
+
+            saveData(appData);
+            alert('تمت أرشفة الجولة بنجاح وبدأت الجولة الجديدة!');
+            renderApp();
+        }
+
+        // --- MEMBER DASHBOARD LOGIC ---
+        function setupMemberDashboard() {
+            const user = appData.currentUser;
+            document.getElementById('memberNameDisplay').textContent = user.fullName;
+            document.getElementById('memberRoundTitle').textContent = appData.currentRound.title;
+
+            renderMemberDashboard();
+        }
+
+        function renderMemberDashboard() {
+            const user = appData.currentUser;
+            const filterDate = document.getElementById('memberFilterDate').value;
+
+            // Compute member points in active round
+            const memberEvals = appData.evaluations.filter(e => e.userId === user.id && e.roundId === appData.currentRound.id);
+            const totalPoints = memberEvals.reduce((sum, e) => sum + e.points, 0);
+            document.getElementById('memberTotalPoints').textContent = totalPoints;
+
+            // Render table of evaluation logs
+            const tbody = document.getElementById('memberLogsTableBody');
+            tbody.innerHTML = '';
+
+            let filteredList = memberEvals;
+            if (filterDate) {
+                filteredList = memberEvals.filter(e => e.date === filterDate);
+            }
+
+            if (filteredList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">لا توجد تقييمات مرصودة حتى الآن.</td></tr>`;
+            } else {
+                // Sort by date descending
+                filteredList.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                filteredList.forEach(e => {
+                    const prog = appData.programs.find(p => p.id === e.programId);
+                    const progName = prog ? prog.name : 'برنامج مجهول';
+
+                    let statusBadge = '';
+                    if (e.status === 'onTime') statusBadge = `<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full text-xs font-bold">تم في وقته</span>`;
+                    else if (e.status === 'late') statusBadge = `<span class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-xs font-bold">متأخر</span>`;
+                    else statusBadge = `<span class="bg-red-100 text-red-800 px-2.5 py-1 rounded-full text-xs font-bold">لم يتم</span>`;
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 border-b";
+                    tr.innerHTML = `
+                        <td class="p-3 text-slate-600 font-mono text-xs">${e.date}</td>
+                        <td class="p-3 font-bold text-slate-800">${progName}</td>
+                        <td class="p-3">${statusBadge}</td>
+                        <td class="p-3 text-slate-500 text-xs">${e.delayDetails || '-'}</td>
+                        <td class="p-3 font-extrabold ${e.points > 0 ? 'text-emerald-600' : e.points < 0 ? 'text-red-500' : 'text-slate-500'}">
+                            ${e.points > 0 ? '+' + e.points : e.points}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Render Member Archives
+            const archivesDiv = document.getElementById('memberArchivesList');
+            archivesDiv.innerHTML = '';
+
+            if (appData.archives.length === 0) {
+                archivesDiv.innerHTML = `<p class="text-sm text-slate-400">لا توجد جولات مؤرشفة حتى الآن.</p>`;
+            } else {
+                appData.archives.forEach(arch => {
+                    const myScore = arch.userScores.find(s => s.userId === user.id);
+                    const points = myScore ? myScore.points : 0;
+
+                    const div = document.createElement('div');
+                    div.className = "p-4 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center";
+                    div.innerHTML = `
+                        <div>
+                            <h4 class="font-bold text-slate-800">${arch.roundTitle}</h4>
+                            <p class="text-xs text-slate-500">من ${arch.startDate} إلى ${arch.endDate}</p>
+                        </div>
+                        <div class="text-left">
+                            <span class="text-xs text-slate-500 block">النقاط التي حققتها</span>
+                            <span class="text-xl font-black text-indigo-600">${points} نقطة</span>
+                        </div>
+                    `;
+                    archivesDiv.appendChild(div);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
