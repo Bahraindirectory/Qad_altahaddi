@@ -62,52 +62,55 @@
                         دخول
                     </button>
                 </form>
-                <div class="mt-6 pt-4 border-t text-xs text-slate-500 bg-slate-50 p-3 rounded-lg">
-                    <p class="font-bold mb-1">بيانات التجربة الافتراضية:</p>
-                    <p>المدير: <span class="font-mono text-indigo-600">admin</span> / كلمة السر: <span class="font-mono text-indigo-600">admin123</span></p>
-                    <p>العضو: <span class="font-mono text-indigo-600">user1</span> / كلمة السر: <span class="font-mono text-indigo-600">123</span></p>
                 </div>
-            </div>
         </section>
 
         <!-- 2. Admin Dashboard View -->
         <section id="adminDashboard" class="hidden space-y-6">
             <!-- Active Round Info Bar -->
-            <div class="bg-gradient-to-r from-indigo-800 to-indigo-600 text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="w-full">
-                    <span class="text-xs uppercase tracking-wider text-indigo-200 font-bold block mb-1">الجولة الحالية النشطة</span>
-                    <h2 id="adminRoundTitle" class="text-2xl font-extrabold"></h2>
-                    <p class="text-sm text-indigo-100 mt-1" id="adminRoundDates"></p>
-
-                    <!-- إعداد المبلغ المرصود وحاسبة النقطة المباشرة -->
-                    <div class="mt-4 pt-3 border-t border-indigo-500/30 flex flex-col md:flex-row items-center justify-between gap-3">
-                        <div class="flex items-center gap-2 w-full md:w-auto">
-                            <label class="text-xs text-indigo-100 font-semibold whitespace-nowrap">المبلغ المرصود للجولة:</label>
-                            <input type="number" id="adminRoundPoolAmount" value="100" placeholder="مثال: 100" 
-                                oninput="updateRoundPoolAmount(this.value)" 
-                                class="px-3 py-1.5 rounded-lg text-slate-800 text-sm font-bold w-32 bg-white focus:outline-none">
-                            <span class="text-xs text-indigo-200">د.ب</span>
-                        </div>
-                        <div class="text-xs text-indigo-100 bg-indigo-900/40 px-3 py-1.5 rounded-lg border border-indigo-400/20 whitespace-nowrap">
-                            حاسبة النقطة: <span id="adminPointRateDisplay" class="font-bold text-amber-300">0.00</span> د.ب / نقطة
-                        </div>
+            <div class="bg-gradient-to-r from-indigo-800 to-indigo-600 text-white rounded-2xl p-6 shadow-lg flex flex-col gap-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <span class="text-xs uppercase tracking-wider text-indigo-200 font-bold block mb-1">الجولة الحالية النشطة</span>
+                        <h2 id="adminRoundTitle" class="text-2xl font-extrabold"></h2>
+                        <p class="text-sm text-indigo-100 mt-1" id="adminRoundDates"></p>
+                    </div>
+                    <button onclick="archiveAndStartNewRound()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-5 py-2.5 rounded-xl shadow transition duration-200 flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-box-archive"></i> أرشفة الجولة وبدء جولة جديدة
+                    </button>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-bold text-indigo-100 whitespace-nowrap">المبلغ المرصود للجولة</label>
+                        <input type="number" id="roundBudgetAmount" step="0.001" min="0"
+                            oninput="updateRoundBudget(this.value)"
+                            class="w-36 px-3 py-1.5 rounded-lg border border-white/30 bg-white/90 text-slate-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    </div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <span class="text-indigo-100 font-semibold">مجموع نقاط البرامج:</span>
+                        <span id="adminTotalProgramPoints" class="font-extrabold text-amber-300">0</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <span class="text-indigo-100 font-semibold">أيام الرصد المسجّلة:</span>
+                        <span id="adminRecordedDays" class="font-extrabold text-amber-300">0</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm sm:mr-auto">
+                        <span class="text-indigo-100 font-semibold">سعر النقطة الواحدة:</span>
+                        <span id="adminPointValue" class="font-extrabold text-emerald-300 text-base">0</span>
                     </div>
                 </div>
-                <button onclick="archiveAndStartNewRound()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-5 py-2.5 rounded-xl shadow transition duration-200 flex items-center gap-2 text-sm whitespace-nowrap">
-                    <i class="fa-solid fa-box-archive"></i> أرشفة الجولة وبدء جولة جديدة
-                </button>
             </div>
 
             <!-- Tabs Navigation -->
-            <div class="flex border-b border-slate-200 bg-white rounded-xl shadow-sm p-1 overflow-x-auto">
-                <button onclick="switchAdminTab('evaluations')" id="tabBtn-evaluations" class="admin-tab text-sm font-bold py-2.5 px-6 rounded-lg text-indigo-600 bg-indigo-50 whitespace-nowrap">
+            <div class="flex border-b border-slate-200 bg-white rounded-xl shadow-sm p-1">
+                <button onclick="switchAdminTab('evaluations')" id="tabBtn-evaluations" class="admin-tab text-sm font-bold py-2.5 px-6 rounded-lg text-indigo-600 bg-indigo-50">
                     <i class="fa-solid fa-clipboard-check ml-1"></i> رصد التقييمات
                 </button>
-                <button onclick="switchAdminTab('programs')" id="tabBtn-programs" class="admin-tab text-sm font-bold py-2.5 px-6 rounded-lg text-slate-600 hover:bg-slate-50 whitespace-nowrap">
+                <button onclick="switchAdminTab('programs')" id="tabBtn-programs" class="admin-tab text-sm font-bold py-2.5 px-6 rounded-lg text-slate-600 hover:bg-slate-50">
                     <i class="fa-solid fa-list-check ml-1"></i> إدارة البرامج
                 </button>
-                <button onclick="switchAdminTab('users')" id="tabBtn-users" class="admin-tab text-sm font-bold py-2.5 px-6 rounded-lg text-slate-600 hover:bg-slate-50 whitespace-nowrap">
-                    <i class="fa-solid fa-users ml-1"></i> إدارة المستخدمين والمستحقات
+                <button onclick="switchAdminTab('users')" id="tabBtn-users" class="admin-tab text-sm font-bold py-2.5 px-6 rounded-lg text-slate-600 hover:bg-slate-50">
+                    <i class="fa-solid fa-users ml-1"></i> إدارة المستخدمين
                 </button>
             </div>
 
@@ -178,7 +181,7 @@
             <div id="adminTab-users" class="hidden space-y-4">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-bold text-slate-800">قائمة المستخدمين والأعضاء والمستحقات</h3>
+                        <h3 class="text-lg font-bold text-slate-800">قائمة المستخدمين والأعضاء</h3>
                         <button onclick="openUserModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition">
                             <i class="fa-solid fa-user-plus"></i> إضافة مستخدم جديد
                         </button>
@@ -190,9 +193,8 @@
                                 <tr class="bg-slate-50 text-slate-600 text-xs font-bold border-b">
                                     <th class="p-3">الاسم الكامل</th>
                                     <th class="p-3">اسم المستخدم</th>
-                                    <th class="p-3">الدور</th>
+                                    <th class="p-3">الدور (الصلاحية)</th>
                                     <th class="p-3">نقاط الجولة الحالية</th>
-                                    <th class="p-3 text-emerald-600">المبلغ المستحق (نتيجة)</th>
                                     <th class="p-3">الإجراءات</th>
                                 </tr>
                             </thead>
@@ -212,26 +214,22 @@
                 <div>
                     <span class="text-xs uppercase tracking-wider text-teal-200 font-bold block mb-1">أهلاً بك، <span id="memberNameDisplay"></span></span>
                     <h2 class="text-2xl font-extrabold" id="memberRoundTitle">الجولة الحالية</h2>
-                    <p class="text-sm text-teal-100 mt-1">تتبع أدائك اليومي ونقاطك ونتيجة استحقاقك النهائي</p>
+                    <p class="text-sm text-teal-100 mt-1">تتبع أدائك اليومي ورصيد نقاطك</p>
                 </div>
-                <div class="flex flex-row justify-center md:justify-end gap-3 w-full md:w-auto">
-                    <!-- كارت إجمالي النقاط -->
-                    <div class="bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20 text-center min-w-[120px]">
-                        <span class="text-xs text-teal-100 font-semibold block">إجمالي النقاط</span>
-                        <span id="memberTotalPoints" class="text-3xl font-extrabold text-amber-300">0</span>
-                        <span class="text-xs text-teal-100 font-semibold block">نقطة</span>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 text-center">
+                        <span class="text-xs text-teal-100 font-semibold block">إجمالي النقاط المحققة</span>
+                        <span id="memberTotalPoints" class="text-4xl font-extrabold text-amber-300">0</span>
+                        <span class="text-xs text-teal-100 font-semibold">نقطة</span>
                     </div>
-
-                    <!-- كارت نتيجة المبلغ المستحق مباشرة -->
-                    <div class="bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20 text-center min-w-[140px]">
-                        <span class="text-xs text-teal-100 font-semibold block">نتيجة المبلغ المستحق</span>
-                        <span id="memberTotalAmount" class="text-3xl font-extrabold text-emerald-300">0.00</span>
-                        <span class="text-xs text-teal-100 font-semibold block">د.ب</span>
+                    <div class="bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 text-center">
+                        <span class="text-xs text-teal-100 font-semibold block">المبلغ المستحق</span>
+                        <span id="memberDueAmount" class="text-4xl font-extrabold text-emerald-300">0</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Current Evaluation Status Table (بدون مبالغ لكل برنامج) -->
+            <!-- Current Evaluation Status Table -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <h3 class="text-lg font-bold text-slate-800">جدول السجل والتقييمات الخاصة بك</h3>
@@ -249,7 +247,7 @@
                                 <th class="p-3">اسم البرنامج</th>
                                 <th class="p-3">الحالة المرصودة</th>
                                 <th class="p-3">التفاصيل / التأخير</th>
-                                <th class="p-3">النقاط المحققة</th>
+                                <th class="p-3">النقاط</th>
                             </tr>
                         </thead>
                         <tbody id="memberLogsTableBody" class="divide-y divide-slate-100 text-sm">
@@ -363,10 +361,10 @@
             currentUser: null,
             currentRound: {
                 id: 'round_1',
-                title: 'قد التحدي لشهر أكتوبر 2026',
+                title: 'قد التحدي لشهر سبتمبر 2026',
                 startDate: new Date().toISOString().split('T')[0],
                 endDate: '',
-                poolAmount: 100 // المبلغ المرصود للجولة
+                budgetAmount: 0
             },
             users: [
                 { id: 'u_admin', username: 'admin', password: 'admin123', fullName: 'المدير العام', role: 'admin' },
@@ -378,38 +376,77 @@
                 { id: 'p_3', name: 'أداء الواجبات المدرسية', frequency: 'يومي', points: { onTime: 15, late: 5, notDone: -10 } },
                 { id: 'p_4', name: 'المراجعة اليومية', frequency: 'يومي', points: { onTime: 10, late: 5, notDone: -5 } }
             ],
+            // Logs structure: { id, roundId, userId, programId, date, status: 'onTime'|'late'|'notDone', delayDetails, points }
             evaluations: [],
+            // Archives structure: [{ roundTitle, startDate, endDate, userScores: [{ userId, fullName, points }] }]
             archives: []
         };
 
-        // --- LOCAL STORAGE HELPERS ---
-        function loadData() {
-            const data = localStorage.getItem('challenge_app_data');
-            if (!data) {
-                localStorage.setItem('challenge_app_data', JSON.stringify(DEFAULT_DATA));
-                return DEFAULT_DATA;
-            }
-            const parsed = JSON.parse(data);
-            if (parsed.currentRound.poolAmount === undefined) parsed.currentRound.poolAmount = 100;
-            return parsed;
+        // --- SHARED SERVER STORAGE (Netlify Function + Blobs) ---
+        let session = null;
+        try { session = JSON.parse(localStorage.getItem('challenge_session') || 'null'); } catch (e) {}
+        let version = 0, pending = 0, saveChain = Promise.resolve(), pollTimer = null;
+        let appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+
+        async function api(path, opts = {}) {
+            const h = { 'Content-Type': 'application/json' };
+            if (session) { h['x-user'] = encodeURIComponent(session.username); h['x-pass'] = encodeURIComponent(session.password); }
+            const r = await fetch('/api' + path, { ...opts, headers: h });
+            return { status: r.status, body: await r.json().catch(() => ({})) };
         }
 
-        function saveData(data) {
-            localStorage.setItem('challenge_app_data', JSON.stringify(data));
+        function applyRemote(res) {
+            const cu = appData.currentUser;
+            appData = { ...res.data, currentUser: cu };
+            version = res.version;
+            const fresh = cu && appData.users.find(u => u.id === cu.id);
+            if (!fresh) { logout(); return; }
+            appData.currentUser = fresh;
+            renderApp();
         }
 
-        let appData = loadData();
+        function saveData() {
+            if (!appData.currentUser || appData.currentUser.role !== 'admin') return;
+            pending++;
+            saveChain = saveChain.then(async () => {
+                const { currentUser, ...shared } = appData;
+                const r = await api('/save', { method: 'POST', body: JSON.stringify({ baseVersion: version, data: shared }) });
+                if (r.status === 200) version = r.body.version;
+                else if (r.status === 409) { applyRemote(r.body); alert('تم تعديل البيانات من جهاز آخر قبل حفظك. تم تحديث الشاشة، أعد المحاولة.'); }
+                else alert('تعذر حفظ التغييرات، تحقق من الاتصال.');
+            }).catch(() => alert('تعذر الاتصال بالخادم.')).finally(() => pending--);
+        }
+
+        function startPolling() {
+            stopPolling();
+            pollTimer = setInterval(async () => {
+                if (!session || !appData.currentUser || document.hidden || pending) return;
+                const a = document.activeElement;
+                if (a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && ['text','number','password','search'].includes(a.type)))) return;
+                if (['programModal', 'userModal'].some(id => { const m = document.getElementById(id); return m && !m.classList.contains('hidden'); })) return;
+                try {
+                    const r = await api('/data?v=' + version);
+                    if (r.status === 401) logout();
+                    else if (r.status === 200 && !r.body.unchanged) applyRemote(r.body);
+                } catch (e) {}
+            }, 4000);
+        }
+        function stopPolling() { if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
+
 
         // --- APP INIT & ROUTING ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Set default eval date to today
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('evalDate').value = today;
             document.getElementById('memberFilterDate').value = '';
 
-            if (appData.currentUser) {
-                renderApp();
-            } else {
-                showAuthView();
+            showAuthView();
+            if (session) {
+                api('/login', { method: 'POST', body: JSON.stringify(session) }).then(r => {
+                    if (r.status === 200) { appData = { ...r.body.data, currentUser: r.body.user }; version = r.body.version; renderApp(); startPolling(); }
+                    else { session = null; localStorage.removeItem('challenge_session'); }
+                }).catch(() => {});
             }
         });
 
@@ -444,73 +481,84 @@
         }
 
         // --- AUTHENTICATION LOGIC ---
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('loginUsername').value.trim();
             const p = document.getElementById('loginPassword').value.trim();
             const errDiv = document.getElementById('loginError');
-
-            const foundUser = appData.users.find(x => x.username === u && x.password === p);
-
-            if (foundUser) {
-                appData.currentUser = foundUser;
-                saveData(appData);
-                errDiv.classList.add('hidden');
-                renderApp();
-            } else {
-                errDiv.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة';
-                errDiv.classList.remove('hidden');
-            }
+            try {
+                const r = await api('/login', { method: 'POST', body: JSON.stringify({ username: u, password: p }) });
+                if (r.status === 200) {
+                    session = { username: u, password: p };
+                    localStorage.setItem('challenge_session', JSON.stringify(session));
+                    appData = { ...r.body.data, currentUser: r.body.user };
+                    version = r.body.version;
+                    errDiv.classList.add('hidden');
+                    renderApp(); startPolling();
+                } else { errDiv.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة'; errDiv.classList.remove('hidden'); }
+            } catch (err) { errDiv.textContent = 'تعذر الاتصال بالخادم'; errDiv.classList.remove('hidden'); }
         }
 
         function logout() {
+            stopPolling();
+            session = null;
+            localStorage.removeItem('challenge_session');
             appData.currentUser = null;
-            saveData(appData);
             showAuthView();
-        }
-
-        // --- FINANCIAL CALCULATOR BASED ON NEW FORMULA ---
-        // سعر النقطة = المبلغ المرصود / (مجموع نقاط كل البرامج * عدد الأيام التي تم فيها الرصد)
-        function calculatePointRate() {
-            const pool = Number(appData.currentRound.poolAmount || 0);
-            if (pool <= 0) return 0;
-
-            // 1. مجموع النقاط القصوى لكافة البرامج في الدورة (يوم/أسبوع/شهر)
-            const sumOfProgramsMaxPoints = appData.programs.reduce((sum, p) => sum + Number(p.points.onTime || 0), 0);
-            
-            // 2. حساب عدد الأيام الفريدة التي تم رصد تقييمات فيها خلال الجولة الحالية
-            const roundEvals = appData.evaluations.filter(e => e.roundId === appData.currentRound.id);
-            const recordedDaysSet = new Set(roundEvals.map(e => e.date));
-            const recordedDaysCount = Math.max(recordedDaysSet.size, 1); // اليوم الأول كحد أدنى
-
-            const totalMaxPossiblePoints = sumOfProgramsMaxPoints * recordedDaysCount;
-
-            if (totalMaxPossiblePoints <= 0) return 0;
-            return pool / totalMaxPossiblePoints;
         }
 
         // --- ADMIN DASHBOARD FUNCTIONS ---
         function setupAdminDashboard() {
             document.getElementById('adminRoundTitle').textContent = appData.currentRound.title;
             document.getElementById('adminRoundDates').textContent = `تاريخ البدء: ${appData.currentRound.startDate}`;
-            document.getElementById('adminRoundPoolAmount').value = appData.currentRound.poolAmount || 0;
-            
-            const rate = calculatePointRate();
-            document.getElementById('adminPointRateDisplay').textContent = rate.toFixed(4);
-
+            document.getElementById('roundBudgetAmount').value = appData.currentRound.budgetAmount || 0;
             populateUserSelectOptions();
             renderEvaluationsTable();
             renderProgramsTable();
             renderUsersTable();
+            renderPointValueStats();
         }
 
-        function updateRoundPoolAmount(val) {
-            appData.currentRound.poolAmount = Number(val || 0);
+        // --- POINT VALUE (PRICE PER POINT) CALCULATION ---
+        // سعر النقطة = المبلغ المرصود للجولة / (مجموع نقاط كل البرامج * عدد الأيام التي تم فيها الرصد)
+        function getRecordedDaysCount() {
+            const dates = new Set(
+                appData.evaluations
+                    .filter(e => e.roundId === appData.currentRound.id)
+                    .map(e => e.date)
+            );
+            return dates.size;
+        }
+
+        function getTotalProgramPoints() {
+            return appData.programs.reduce((sum, p) => sum + Number(p.points.onTime || 0), 0);
+        }
+
+        function getPointValue() {
+            const budget = Number(appData.currentRound.budgetAmount || 0);
+            const totalProgramPoints = getTotalProgramPoints();
+            const recordedDays = getRecordedDaysCount();
+            const denominator = totalProgramPoints * recordedDays;
+            if (!budget || !denominator) return 0;
+            return budget / denominator;
+        }
+
+        function updateRoundBudget(value) {
+            appData.currentRound.budgetAmount = Number(value) || 0;
             saveData(appData);
-            
-            const rate = calculatePointRate();
-            document.getElementById('adminPointRateDisplay').textContent = rate.toFixed(4);
-            renderUsersTable();
+            renderPointValueStats();
+        }
+
+        function renderPointValueStats() {
+            const totalProgramPoints = getTotalProgramPoints();
+            const recordedDays = getRecordedDaysCount();
+            const pointValue = getPointValue();
+            const totalEl = document.getElementById('adminTotalProgramPoints');
+            const daysEl = document.getElementById('adminRecordedDays');
+            const valEl = document.getElementById('adminPointValue');
+            if (totalEl) totalEl.textContent = totalProgramPoints;
+            if (daysEl) daysEl.textContent = recordedDays;
+            if (valEl) valEl.textContent = pointValue.toLocaleString('ar', { maximumFractionDigits: 4 });
         }
 
         function switchAdminTab(tabName) {
@@ -541,6 +589,7 @@
             });
         }
 
+        // Render Evaluations Grid for Selected User and Date
         function renderEvaluationsTable() {
             const selectedUserId = document.getElementById('evalUserSelect').value;
             const selectedDate = document.getElementById('evalDate').value;
@@ -553,6 +602,7 @@
             }
 
             appData.programs.forEach(prog => {
+                // Find existing eval
                 const evalItem = appData.evaluations.find(e => 
                     e.roundId === appData.currentRound.id &&
                     e.userId === selectedUserId &&
@@ -625,9 +675,7 @@
 
             saveData(appData);
             renderEvaluationsTable();
-            
-            const rate = calculatePointRate();
-            document.getElementById('adminPointRateDisplay').textContent = rate.toFixed(4);
+            renderPointValueStats();
         }
 
         function updateDelayDetails(programId, details, date, userId) {
@@ -735,14 +783,12 @@
         function renderUsersTable() {
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
-            const rate = calculatePointRate();
 
             appData.users.forEach(u => {
+                // Calculate current round total points for user
                 const userPts = appData.evaluations
                     .filter(e => e.userId === u.id && e.roundId === appData.currentRound.id)
                     .reduce((sum, e) => sum + e.points, 0);
-
-                const userAmount = (Math.max(0, userPts) * rate).toFixed(2);
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -750,7 +796,6 @@
                     <td class="p-3 font-mono text-xs">${u.username}</td>
                     <td class="p-3"><span class="px-2 py-0.5 rounded text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${u.role === 'admin' ? 'مدير' : 'عضو'}</span></td>
                     <td class="p-3 font-extrabold text-amber-600">${userPts} نقطة</td>
-                    <td class="p-3 font-extrabold text-emerald-600">${userAmount} د.ب</td>
                     <td class="p-3 space-x-2 space-x-reverse">
                         <button onclick="editUser('${u.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold"><i class="fa-solid fa-pen"></i> تعديل</button>
                         ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.id}')" class="text-red-500 hover:text-red-700 text-xs font-bold"><i class="fa-solid fa-trash"></i> حذف</button>` : ''}
@@ -819,37 +864,39 @@
 
         // --- ROUNDS & ARCHIVING SYSTEM ---
         function archiveAndStartNewRound() {
-            if (!confirm('هل أنت تأكد من أرشفة الجولة الحالية وبدء جولة جديدة؟ سيتم أرشفة نقاط ومستحقات الجولة وتصفير التقييمات.')) return;
+            if (!confirm('هل أنت تأكد من أرشفة الجولة الحالية وبدء جولة جديدة؟ سيتم صفر نقاط الجولة الحالية وتحويل النتائج للأرشيف.')) return;
 
             const today = new Date().toISOString().split('T')[0];
-            const rate = calculatePointRate();
 
+            // 1. Calculate scores per user for current round
             const userScores = appData.users.filter(u => u.role === 'member').map(u => {
                 const totalPoints = appData.evaluations
                     .filter(e => e.userId === u.id && e.roundId === appData.currentRound.id)
                     .reduce((sum, e) => sum + e.points, 0);
-                
-                const finalAmount = (Math.max(0, totalPoints) * rate).toFixed(2);
-                return { userId: u.id, fullName: u.fullName, points: totalPoints, amount: finalAmount };
+                return { userId: u.id, fullName: u.fullName, points: totalPoints };
             });
 
+            // 2. Save archive entry
             appData.archives.push({
                 roundTitle: appData.currentRound.title,
                 startDate: appData.currentRound.startDate,
                 endDate: today,
-                poolAmount: appData.currentRound.poolAmount,
                 userScores: userScores
             });
 
+            // 3. Prompt for new round title
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
             const defaultNewName = `قد التحدي لشهر جديد ${today}`;
             const newTitle = prompt('أدخل اسم الجولة الجديدة:', defaultNewName) || defaultNewName;
 
+            // 4. Update current round info
             appData.currentRound = {
                 id: 'round_' + Date.now(),
                 title: newTitle,
                 startDate: today,
                 endDate: '',
-                poolAmount: 100
+                budgetAmount: 0
             };
 
             saveData(appData);
@@ -869,16 +916,18 @@
         function renderMemberDashboard() {
             const user = appData.currentUser;
             const filterDate = document.getElementById('memberFilterDate').value;
-            const rate = calculatePointRate();
 
+            // Compute member points in active round
             const memberEvals = appData.evaluations.filter(e => e.userId === user.id && e.roundId === appData.currentRound.id);
             const totalPoints = memberEvals.reduce((sum, e) => sum + e.points, 0);
-            const totalAmount = (Math.max(0, totalPoints) * rate).toFixed(2);
-
             document.getElementById('memberTotalPoints').textContent = totalPoints;
-            document.getElementById('memberTotalAmount').textContent = totalAmount;
 
-            // جدول السجل والتقييمات اليومية
+            const pointValue = getPointValue();
+            const dueAmount = totalPoints * pointValue;
+            const dueEl = document.getElementById('memberDueAmount');
+            if (dueEl) dueEl.textContent = dueAmount.toLocaleString('ar', { maximumFractionDigits: 3 });
+
+            // Render table of evaluation logs
             const tbody = document.getElementById('memberLogsTableBody');
             tbody.innerHTML = '';
 
@@ -890,6 +939,7 @@
             if (filteredList.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">لا توجد تقييمات مرصودة حتى الآن.</td></tr>`;
             } else {
+                // Sort by date descending
                 filteredList.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 filteredList.forEach(e => {
@@ -916,7 +966,7 @@
                 });
             }
 
-            // أرشيف الجولات
+            // Render Member Archives
             const archivesDiv = document.getElementById('memberArchivesList');
             archivesDiv.innerHTML = '';
 
@@ -924,9 +974,8 @@
                 archivesDiv.innerHTML = `<p class="text-sm text-slate-400">لا توجد جولات مؤرشفة حتى الآن.</p>`;
             } else {
                 appData.archives.forEach(arch => {
-                    const myScore = arch.userScores ? arch.userScores.find(s => s.userId === user.id) : null;
+                    const myScore = arch.userScores.find(s => s.userId === user.id);
                     const points = myScore ? myScore.points : 0;
-                    const amount = myScore ? myScore.amount : '0.00';
 
                     const div = document.createElement('div');
                     div.className = "p-4 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center";
@@ -935,15 +984,9 @@
                             <h4 class="font-bold text-slate-800">${arch.roundTitle}</h4>
                             <p class="text-xs text-slate-500">من ${arch.startDate} إلى ${arch.endDate}</p>
                         </div>
-                        <div class="text-left flex gap-4">
-                            <div>
-                                <span class="text-xs text-slate-500 block">النقاط المحققة</span>
-                                <span class="text-lg font-black text-indigo-600">${points} نقطة</span>
-                            </div>
-                            <div>
-                                <span class="text-xs text-slate-500 block">المبلغ المستحق</span>
-                                <span class="text-lg font-black text-emerald-600">${amount} د.ب</span>
-                            </div>
+                        <div class="text-left">
+                            <span class="text-xs text-slate-500 block">النقاط التي حققتها</span>
+                            <span class="text-xl font-black text-indigo-600">${points} نقطة</span>
                         </div>
                     `;
                     archivesDiv.appendChild(div);
